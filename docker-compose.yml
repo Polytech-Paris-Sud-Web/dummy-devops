@@ -3,23 +3,38 @@ version: '3.8'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch
+    container_name: dummy-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
-      - elastic
+      - dummy-network
 
-volumes:
-  elasticsearch_data:
-    driver: local
+  backend:
+    build: ./backend
+    container_name: dummy-backend
+    environment:
+      - ELASTICSEARCH_URL=http://dummy-elasticsearch:9200
+    ports:
+      - "3000:3000"
+    depends_on:
+      - elasticsearch
+    networks:
+      - dummy-network
+    command: sh -c "sleep 10 && npm run init-db && npm start"
+
+  frontend:
+    build: ./frontend
+    container_name: dummy-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - dummy-network
 
 networks:
-  elastic:
+  dummy-network:
     driver: bridge
