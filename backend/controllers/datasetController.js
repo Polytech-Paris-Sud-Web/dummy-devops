@@ -1,31 +1,14 @@
-import client from '../config/elasticsearch.js';
-
-const INDEX_NAME = 'datasets';
+import { datasets } from "../data/fixtures.js";
 
 export const getDatasetById = async (req, res) => {
-    try {
-        const { id } = req.params;
+  const { id } = req.params;
+  const dataset = datasets.find((ds) => ds.id === id);
 
-        const result = await client.get({
-            index: INDEX_NAME,
-            id: id
-        });
+  if (!dataset) {
+    const error = new Error("Dataset not found");
+    error.meta = { statusCode: 404 };
+    throw error;
+  }
 
-        if (!result.found) {
-            return res.status(404).json({ error: 'Dataset not found' });
-        }
-
-        res.json(result._source);
-    } catch (error) {
-        console.error('Error fetching dataset:', error);
-
-        if (error.meta?.statusCode === 404) {
-            return res.status(404).json({ error: 'Dataset not found' });
-        }
-
-        res.status(500).json({
-            error: 'Internal server error',
-            message: error.message
-        });
-    }
+  res.json(dataset);
 };
