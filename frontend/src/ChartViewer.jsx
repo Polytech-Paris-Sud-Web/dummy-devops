@@ -76,7 +76,7 @@ const ChartViewer = () => {
     if (error) {
         return (
             <div className="chart-viewer-container">
-                <div className="error">Error: {error}</div>
+                <div className="error">Something went wrong:<br /> {error}</div>
             </div>
         );
     }
